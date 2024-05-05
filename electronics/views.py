@@ -35,10 +35,3 @@ class SellerViewSet(ModelViewSet):
         if self.action in ('update', 'destroy', 'partial_update'):
             permission_classes = [IsAuthenticated, IsOwner, ]
         return [permission() for permission in permission_classes]
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return UserCreateSerializer
-        if self.request.user.is_staff:
-            return UserUpdateSerializer
-        return UserSerializer
