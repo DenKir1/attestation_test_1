@@ -43,10 +43,12 @@ class ContactViewSet(viewsets.ModelViewSet):
 class SellerViewSet(ModelViewSet):
     # queryset = Seller.objects.all()
     # serializer_class = SellerSerializer
-    permission_classes = [IsActive]
-    filter_backends = [SearchFilter]
-    search_fields = ['contact__country', ]
-    filterset_fields = ['contact__country', ]
+    #permission_classes = [IsActive]
+    #filter_backends = [SearchFilter]
+    #search_fields = ['contact__country', ]
+    #filterset_fields = ['contact__country', ]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = SellerFilter
 
     def get_queryset(self):
         queryset = Seller.objects.all()
@@ -64,11 +66,11 @@ class SellerViewSet(ModelViewSet):
         return SellerSerializer
 
     def get_permissions(self):
-        permission_classes = [AllowAny, ]
+        permission_classes = [IsActive, ]
         if self.action in ('retrieve', 'list'):
-            permission_classes = [IsAuthenticated, ]
+            permission_classes = [IsActive, ]
         if self.action in ('update', 'destroy', 'partial_update'):
-            permission_classes = [IsAuthenticated, IsOwner | IsAdmin, ]
+            permission_classes = [IsActive, IsOwner | IsAdmin, ]
         return [permission() for permission in permission_classes]
 
 
