@@ -18,7 +18,8 @@ class SellerViewSet(ModelViewSet):
         queryset = Seller.objects.all()
         country = self.request.query_params.get('country', None)
         if country is not None:
-            queryset = queryset.filter(country=country)
+            contacts = Contact.filter(country=country)
+            queryset = queryset.filter(contact=[contacts]) # examine
         return queryset
 
     def get_serializer_class(self):
@@ -33,5 +34,5 @@ class SellerViewSet(ModelViewSet):
         if self.action in ('retrieve', 'list'):
             permission_classes = [IsAuthenticated, ]
         if self.action in ('update', 'destroy', 'partial_update'):
-            permission_classes = [IsAuthenticated, IsOwner, ]
+            permission_classes = [IsAuthenticated, IsOwner | IsAdmin, ]
         return [permission() for permission in permission_classes]
