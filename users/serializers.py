@@ -34,7 +34,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'avatar', 'phone', 'is_active', 'is_verify', ]
+        fields = ['id', 'email', 'avatar', 'phone', 'is_active', 'is_verify', 'is_staff', 'is_superuser', ]
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

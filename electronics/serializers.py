@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from electronics.models import Seller
+from electronics.models import Seller, Product, Contact
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -14,15 +14,22 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SellerSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(many=True, required=False)
-    contact = ContactSerializer(many=True, required=False)
+class SellerViewSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True, required=False)
+    contact = ContactSerializer(required=False)
+
     class Meta:
         model = Seller
         fields = '__all__'
 
 
+class SellerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seller
+        exclude = ('owner', )
+
+
 class SellerUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seller
-        exclude = ('debt', 'created', )
+        exclude = ('debt', 'created', 'owner', )

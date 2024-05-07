@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+
 from electronics.models import Product, Contact, Seller
 
 
@@ -13,13 +16,15 @@ def debt_nulled(modeladmin, request, queryset):
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    def link_to_suplier(self, obj):
-        link = urlresolvers.reverse('admin:app_bar_change', args=[obj.suplier.id])
-        linkify = format_html('<a href="{}">{}</a>', link, obj.suplier.id) if obj.suplier.id else None
-        linkify.short_description = obj.suplier.name
+
+    def supplier_link(self, obj):
+        link = reverse("admin:electronics_seller_change", args=[obj.supplier.id])
+        linkify = format_html('<a href="{}">{}</a>', link, obj.supplier.name) if obj else None
         return linkify
-        
-    list_display = ('name', 'seller_type', 'link_to_suplier',)
+
+    supplier_link.allow_tags = True
+    supplier_link.short_description = 'ПОСТАВЩИК'
+    list_display = ('name', 'seller_type', 'contact', 'supplier_link', 'debt', 'created', )
 
     list_filter = ('seller_type', 'contact__city',)
     actions = [debt_nulled, ]

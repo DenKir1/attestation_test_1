@@ -1,83 +1,67 @@
-from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet
 
-from electronics.models import Seller
-from electronics.permissions import IsActive
-from electronics.serializers import SellerSerializer, SellerUpdateSerializer
+from electronics.filters import SellerFilter
+from electronics.models import Seller, Product, Contact
+from users.permissions import IsActive, IsAdmin, IsOwner
+from electronics.serializers import SellerSerializer, SellerUpdateSerializer, ProductSerializer, ContactSerializer, \
+    SellerViewSerializer
 
 
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(ModelViewSet):
     """
     Контроллер для модели Продуктов
     """
-
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
     def get_permissions(self):
-        permission_classes = [AllowAny, ]
+        permission_classes = [IsActive, ]
         if self.action in ('retrieve', 'list', 'create'):
-            permission_classes = [IsAuthenticated, ]
+            permission_classes = [IsActive, ]
         if self.action in ('update', 'destroy', 'partial_update'):
             permission_classes = [IsAdmin, ]
         return [permission() for permission in permission_classes]
 
 
-class ContactViewSet(viewsets.ModelViewSet):
+class ContactViewSet(ModelViewSet):
     """
     Контроллер для модели Контактов
     """
-
     queryset = Contact.objects.all()
-    serializer_class = ProductSerializer
+    serializer_class = ContactSerializer
 
     def get_permissions(self):
-        permission_classes = [AllowAny, ]
+        permission_classes = [IsActive, ]
         if self.action in ('retrieve', 'list', 'create'):
-            permission_classes = [IsAuthenticated, ]
+            permission_classes = [IsActive, ]
         if self.action in ('update', 'destroy', 'partial_update'):
             permission_classes = [IsAdmin, ]
         return [permission() for permission in permission_classes]
 
 
 class SellerViewSet(ModelViewSet):
-    # queryset = Seller.objects.all()
-    # serializer_class = SellerSerializer
-    #permission_classes = [IsActive]
-    #filter_backends = [SearchFilter]
-    #search_fields = ['contact__country', ]
-    #filterset_fields = ['contact__country', ]
+    """
+        Контроллер для модели Объекта торговой сети
+    """
+    queryset = Seller.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_class = SellerFilter
 
-    def get_queryset(self):
-        queryset = Seller.objects.all()
-        country = self.request.query_params.get('country', None)
-        if country is not None:
-            contacts = Contact.filter(country=country)
-            queryset = queryset.filter(contact=[contacts]) # examine
-        return queryset
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
     def get_serializer_class(self):
-        if self.request.user.is_staff:
-            return SellerSerializer
+        if self.action in ('list', 'retrieve'):
+            return SellerViewSerializer
         if self.action in ('update', 'partial_update'):
+            if self.request.user.is_staff:
+                return SellerSerializer
             return SellerUpdateSerializer
         return SellerSerializer
 
     def get_permissions(self):
         permission_classes = [IsActive, ]
-        if self.action in ('retrieve', 'list'):
-            permission_classes = [IsActive, ]
         if self.action in ('update', 'destroy', 'partial_update'):
-            permission_classes = [IsActive, IsOwner | IsAdmin, ]
+            permission_classes = [IsOwner | IsAdmin, ]
         return [permission() for permission in permission_classes]
-
-
-# filter to file
-import django_filters
-class SellerFilter(django_filters.FilterSet):
-    contact__country = django_filters.CharFilter(field_name='country', lookup_expr='icontains')
-    class Meta:
-        model = Seller
-        fields = ['contact__country']
