@@ -17,8 +17,7 @@ class ProductViewSet(ModelViewSet):
 
     def get_permissions(self):
         permission_classes = [IsActive, ]
-        if self.action in ('retrieve', 'list', 'create'):
-            permission_classes = [IsActive, ]
+
         if self.action in ('update', 'destroy', 'partial_update'):
             permission_classes = [IsAdmin, ]
         return [permission() for permission in permission_classes]
@@ -33,8 +32,7 @@ class ContactViewSet(ModelViewSet):
 
     def get_permissions(self):
         permission_classes = [IsActive, ]
-        if self.action in ('retrieve', 'list', 'create'):
-            permission_classes = [IsActive, ]
+
         if self.action in ('update', 'destroy', 'partial_update'):
             permission_classes = [IsAdmin, ]
         return [permission() for permission in permission_classes]
